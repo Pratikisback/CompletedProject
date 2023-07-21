@@ -1,0 +1,42 @@
+version: "3" #This is the version of mongodb
+services:
+  mongodb:
+     image: mongo #This is the official image which we are using right now
+     ports:
+      - "27017:27017" #This is the port mapping where the port 27017 of the host is connected to the port 27017 of the container
+     volumes:
+       - ./mongodb:/data/db
+#The left side of the colon is the host system's directory ,i.e. mongodb and the /data/lib is the directory  on the container
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask-app-restful
+    ports:
+      - "5000:5000"
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: nginx-container
+    ports:
+      - "80:80"
+
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    container_name: celery
+    depends_on:
+      - amqp
+      - flask
+
+  amqp:
+    restart: always
+    hostname: amqp
+    image: rabbitmq
+    container_name: amqp
+    ports:
+      - "5673:5672"
